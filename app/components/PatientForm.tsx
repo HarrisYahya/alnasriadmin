@@ -49,7 +49,7 @@ export default function PatientForm({
         <label className={labelClass}>Full name</label>
         <input
           type="text"
-          placeholder="e.g., Victoria Lancaster"
+          placeholder="Abukar mohamed adan"
           className={inputClass}
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -61,7 +61,7 @@ export default function PatientForm({
         <label className={labelClass}>Phone</label>
         <input
           type="text"
-          placeholder="+1 (555) 123-4567"
+          placeholder="+252619355156"
           className={inputClass}
           value={form.phone}
           onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -73,7 +73,7 @@ export default function PatientForm({
         <label className={labelClass}>Location</label>
         <input
           type="text"
-          placeholder={neonMode ? "Neon District, CA" : "Beverly Hills, CA"}
+          placeholder={neonMode ? "Dharkiinlay" : "Harris"}
           className={inputClass}
           value={form.location}
           onChange={(e) => setForm({ ...form, location: e.target.value })}

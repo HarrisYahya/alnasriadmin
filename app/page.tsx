@@ -79,7 +79,12 @@ export default function DashboardPage() {
         <div className={`fixed inset-0 z-30 md:hidden ${neonMode ? "bg-black/60 backdrop-blur-sm" : "bg-white/80 backdrop-blur-sm"}`} onClick={() => setMobileMenuOpen(false)} />
       )}
       <main className="flex-1 p-4 md:p-8 lg:p-10 overflow-x-auto">
-        <Header patientsCount={totalPatients} neonMode={neonMode} setNeonMode={setNeonMode} />
+         <Header
+          patientsCount={totalPatients}
+          neonMode={neonMode}
+          setNeonMode={setNeonMode}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
 
         <div className={`rounded-2xl p-6 mb-8 ${neonMode ? "bg-cyan-950/30 border border-cyan-500/30" : "bg-amber-50/50 border border-amber-100"}`}>
           <h1 className={`text-2xl md:text-3xl font-light ${neonMode ? "text-cyan-300" : "text-gray-800"}`}>
