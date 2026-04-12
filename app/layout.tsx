@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
+import { AppointmentProvider } from "./context/AppointmentContext";
 import { AuthProvider } from "./context/AuthContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import { PatientProvider } from "./context/PatientContext";
@@ -24,7 +25,9 @@ export default function RootLayout({
         <AuthProvider>
           <SettingsProvider>
             <PatientProvider>
-              {children}
+              <AppointmentProvider>
+                {children}
+              </AppointmentProvider>
             </PatientProvider>
           </SettingsProvider>
         </AuthProvider>

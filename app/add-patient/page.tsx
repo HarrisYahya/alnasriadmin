@@ -12,6 +12,7 @@ import { servicesList } from "../lib/constants";
 export default function AddPatientPage() {
   const { addPatient } = usePatients();
   const { settings } = useSettings();
+
   const [showServices, setShowServices] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [neonMode, setNeonMode] = useState(settings.theme === "neon");
@@ -21,6 +22,7 @@ export default function AddPatientPage() {
     name: "",
     phone: "",
     services: [] as string[],
+    teeth: {} as Record<string, number>,
     location: "",
     fee: 0,
     discount: settings.defaultDiscount,
@@ -29,12 +31,29 @@ export default function AddPatientPage() {
     datetime: "",
   });
 
-  const updateFeeAndTotal = (services: string[], discount: number) => {
-    const fee = services.reduce((sum, serviceName) => {
+  // 🧮 fee calculation
+  const calculateFee = (services: string[], teethMap: Record<string, number>) => {
+    return services.reduce((sum, serviceName) => {
       const service = servicesList.find((s) => s.name === serviceName);
-      return sum + (service?.fee || 0);
+      if (!service) return sum;
+
+      if (service.perTooth) {
+        const teeth = teethMap[serviceName] || 1;
+        return sum + service.fee * teeth;
+      }
+
+      return sum + service.fee;
     }, 0);
+  };
+
+  const updateFeeAndTotal = (
+    services: string[],
+    teethMap: Record<string, number>,
+    discount: number
+  ) => {
+    const fee = calculateFee(services, teethMap);
     const total = fee - discount;
+
     setForm((prev) => ({
       ...prev,
       fee,
@@ -42,20 +61,42 @@ export default function AddPatientPage() {
     }));
   };
 
+  // ➕ toggle service
   const toggleService = (serviceName: string) => {
     let newServices;
+
     if (form.services.includes(serviceName)) {
       newServices = form.services.filter((s) => s !== serviceName);
     } else {
       newServices = [...form.services, serviceName];
     }
-    setForm({ ...form, services: newServices });
-    updateFeeAndTotal(newServices, form.discount);
+
+    setForm((prev) => ({
+      ...prev,
+      services: newServices,
+    }));
+
+    updateFeeAndTotal(newServices, form.teeth, form.discount);
+  };
+
+  // 🦷 update teeth count (used by popup)
+  const updateTeeth = (serviceName: string, count: number) => {
+    const newTeeth = {
+      ...form.teeth,
+      [serviceName]: count,
+    };
+
+    setForm((prev) => ({
+      ...prev,
+      teeth: newTeeth,
+    }));
+
+    updateFeeAndTotal(form.services, newTeeth, form.discount);
   };
 
   const handleDiscountChange = (discount: number) => {
     setForm({ ...form, discount });
-    updateFeeAndTotal(form.services, discount);
+    updateFeeAndTotal(form.services, form.teeth, discount);
   };
 
   const handleAmountPaidChange = (amount: number) => {
@@ -73,7 +114,14 @@ export default function AddPatientPage() {
       formattedDateTime = new Date(formattedDateTime).toISOString();
     }
 
-    const patientData = { ...form, datetime: formattedDateTime };
+    // ❌ remove teeth before sending to Supabase
+    const { teeth, ...rest } = form;
+
+    const patientData = {
+      ...rest,
+      datetime: formattedDateTime,
+    };
+
     await addPatient(patientData);
     setIsSubmitting(false);
 
@@ -81,6 +129,7 @@ export default function AddPatientPage() {
       name: "",
       phone: "",
       services: [],
+      teeth: {},
       location: "",
       fee: 0,
       discount: settings.defaultDiscount,
@@ -148,6 +197,7 @@ export default function AddPatientPage() {
           selectedServices={form.services}
           toggleService={toggleService}
           neonMode={neonMode}
+          updateTeeth={updateTeeth}   // ✅ ONLY REQUIRED PROP
         />
       </main>
     </div>
