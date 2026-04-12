@@ -14,8 +14,8 @@ const defaultSettings: AppSettings = {
   theme: "neon",
   defaultDiscount: 0,
   clinicName: "Alnasri Dental",
-  clinicPhone: "+1 (555) 123-4567",
-  clinicAddress: "123 Luxury Lane, Beverly Hills, CA",
+  clinicPhone: "+252 61 249 2575",
+  clinicAddress: "Jaale siyad street, madina, Tabakayo, Madow",
 };
 
 interface SettingsContextType {
