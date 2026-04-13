@@ -27,18 +27,38 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
     if (signInError) {
       setError(signInError.message);
       setLoading(false);
       return;
     }
 
-    // Wait a moment for session to be set in cookies
+    // 🔹 Get role from staff table
+    const { data: staff, error: staffError } = await supabase
+      .from("staff")
+      .select("role")
+      .eq("email", email)
+      .single();
+
+    if (staffError) {
+      setLoading(false);
+      router.replace("/");
+      return;
+    }
+
+    // 🔹 Redirect based on role
     setTimeout(() => {
-      router.replace('/');
-    }, 500);
+      if (staff?.role === "staff") {
+        router.replace("/queue");
+      } else {
+        router.replace("/");
+      }
+    }, 300);
   };
 
   return (
@@ -48,13 +68,19 @@ export default function LoginPage() {
           <div className="w-16 h-16 rounded-full bg-linear-to-tr from-cyan-500 to-purple-600 flex items-center justify-center mx-auto shadow-[0_0_12px_#0ff]">
             <span className="text-white text-3xl">🦷</span>
           </div>
-          <h2 className="text-2xl font-light text-cyan-300 mt-4">Welcome Back</h2>
-          <p className="text-gray-400 text-sm">Sign in to access your dashboard</p>
+          <h2 className="text-2xl font-light text-cyan-300 mt-4">
+            Welcome Back
+          </h2>
+          <p className="text-gray-400 text-sm">
+            Sign in to access your dashboard
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs uppercase tracking-wider font-semibold text-cyan-400">Email</label>
+            <label className="text-xs uppercase tracking-wider font-semibold text-cyan-400">
+              Email
+            </label>
             <input
               type="email"
               required
@@ -63,8 +89,11 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div>
-            <label className="text-xs uppercase tracking-wider font-semibold text-cyan-400">Password</label>
+            <label className="text-xs uppercase tracking-wider font-semibold text-cyan-400">
+              Password
+            </label>
             <input
               type="password"
               required
@@ -73,7 +102,9 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           {error && <p className="text-red-400 text-sm">{error}</p>}
+
           <button
             type="submit"
             disabled={loading}

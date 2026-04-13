@@ -167,6 +167,7 @@ export default function AddPatientPage() {
           patientsCount={0}
           neonMode={neonMode}
           setNeonMode={setNeonMode}
+           setMobileMenuOpen={setMobileMenuOpen} 
         />
 
         <div className="mb-8">

@@ -103,6 +103,7 @@ export default function CalendarPage() {
           patientsCount={appointments.length}
           neonMode={neonMode}
           setNeonMode={setNeonMode}
+          setMobileMenuOpen={setMobileMenuOpen} 
         />
 
         <div className="flex justify-between items-center mb-6">

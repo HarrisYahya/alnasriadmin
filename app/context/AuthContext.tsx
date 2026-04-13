@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { User, Session } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation"; // ✅ added
 
 interface AuthContextType {
   user: User | null;
@@ -19,9 +20,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter(); // ✅ added
 
   useEffect(() => {
-    // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session?.user?.email);
       setSession(session);
@@ -29,7 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -45,7 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Sign in error:", error);
       return { error };
     }
-    console.log("Sign in successful, session:", data.session);
     return { error: null };
   };
 
@@ -60,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    router.push("/login"); // ✅ FIX
   };
 
   return (

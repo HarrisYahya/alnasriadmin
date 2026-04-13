@@ -1,3 +1,4 @@
+//app/settings/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -96,6 +97,7 @@ export default function SettingsPage() {
             setNeonMode(mode);
             updateSettings({ theme: mode ? "neon" : "white" });
           }}
+           setMobileMenuOpen={setMobileMenuOpen} 
         />
 
         <div className="mb-6">

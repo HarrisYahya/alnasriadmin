@@ -1,3 +1,4 @@
+//app/patients/page.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -98,7 +99,7 @@ export default function PatientsPage() {
         <div className={`fixed inset-0 z-30 md:hidden ${neonMode ? "bg-black/60 backdrop-blur-sm" : "bg-white/80 backdrop-blur-sm"}`} onClick={() => setMobileMenuOpen(false)} />
       )}
       <main className="flex-1 p-4 md:p-8 lg:p-10 overflow-x-auto">
-        <Header patientsCount={filteredPatients.length} neonMode={neonMode} setNeonMode={setNeonMode} />
+        <Header patientsCount={filteredPatients.length} neonMode={neonMode} setNeonMode={setNeonMode}  setMobileMenuOpen={setMobileMenuOpen} />
 
         {/* Filters Panel */}
         <div className={`mb-6 p-4 rounded-xl ${neonMode ? "bg-black/40 border border-cyan-500/30" : "bg-white/80 border border-amber-100 shadow-sm"}`}>

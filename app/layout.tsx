@@ -6,6 +6,7 @@ import { AppointmentProvider } from "./context/AppointmentContext";
 import { AuthProvider } from "./context/AuthContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import { PatientProvider } from "./context/PatientContext";
+import { QueueProvider } from "./context/QueueContext"; // ✅ ADD THIS
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +27,9 @@ export default function RootLayout({
           <SettingsProvider>
             <PatientProvider>
               <AppointmentProvider>
-                {children}
+                <QueueProvider>   {/* ✅ ADD THIS */}
+                  {children}
+                </QueueProvider>
               </AppointmentProvider>
             </PatientProvider>
           </SettingsProvider>
