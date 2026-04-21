@@ -28,7 +28,7 @@ export default function PharmacyPage() {
     addItem,
     deleteItem,
     refreshItems,
-    triggerRefresh, // ✅ IMPORTANT FIX
+    triggerRefresh,
   } = usePharmacy();
 
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function PharmacyPage() {
   const [editItemData, setEditItemData] = useState<any>(null);
   const [deleteItemData, setDeleteItemData] = useState<any>(null);
 
-  // 🔐 ROLE CHECK
+  // ROLE CHECK
   useEffect(() => {
     const checkRole = async () => {
       if (!session?.user?.email) return;
@@ -66,19 +66,17 @@ export default function PharmacyPage() {
     checkRole();
   }, [session, router]);
 
-  // ➕ ADD ITEM
+  // ADD ITEM
   const handleSave = async () => {
     if (!name.trim()) return;
 
     setLoading(true);
 
-    const payload = {
+    await addItem({
       name,
       quantity: Number(qty) || 0,
       price: Number(price) || 0,
-    };
-
-    await addItem(payload);
+    });
 
     await logActivity({
       action: "add",
@@ -92,10 +90,10 @@ export default function PharmacyPage() {
     setLoading(false);
 
     refreshItems();
-    triggerRefresh(); // 🔥 FIX DASHBOARD UPDATE
+    triggerRefresh();
   };
 
-  // ❌ DELETE
+  // DELETE
   const confirmDelete = async (id: string) => {
     await deleteItem(id);
 
@@ -106,12 +104,11 @@ export default function PharmacyPage() {
     });
 
     setDeleteItemData(null);
-
     refreshItems();
-    triggerRefresh(); // 🔥 FIX DASHBOARD UPDATE
+    triggerRefresh();
   };
 
-  // 💊 SELL ITEM (MAIN FIX)
+  // SELL
   const confirmSell = async (qtyToSell: number) => {
     const item = sellItemData;
     if (!item) return;
@@ -131,9 +128,7 @@ export default function PharmacyPage() {
 
     await supabase
       .from("pharmacy_items")
-      .update({
-        quantity: item.quantity - qtyToSell,
-      })
+      .update({ quantity: item.quantity - qtyToSell })
       .eq("id", item.id);
 
     await logActivity({
@@ -149,9 +144,8 @@ export default function PharmacyPage() {
     });
 
     setSellItemData(null);
-
     refreshItems();
-    triggerRefresh(); // 🔥 FIX DASHBOARD + SALES + TABLE
+    triggerRefresh();
   };
 
   const filteredItems = items.filter((i) =>
@@ -168,16 +162,18 @@ export default function PharmacyPage() {
   return (
     <div className="flex min-h-screen bg-black text-white">
 
-      {/* SIDEBAR */}
-      <PharmacySidebar onNavigate={setPage} signOut={signOut} />
+      {/* SIDEBAR (desktop only) */}
+      <div className="hidden md:block">
+        <PharmacySidebar onNavigate={setPage} signOut={signOut} />
+      </div>
 
-      <div className="flex-1 ml-64 p-6 space-y-6">
+      {/* MAIN */}
+      <div className="flex-1 w-full md:ml-64 p-3 md:p-6 space-y-6">
 
-        {/* HEADER */}
         <PharmacyHeader signOut={signOut} totalValue={totalValue} />
 
         {/* STATS */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
           <div className="bg-black/40 p-4 rounded-xl border border-cyan-500/20">
             <p className="text-gray-400 text-sm">Items</p>
@@ -220,12 +216,15 @@ export default function PharmacyPage() {
               loading={loading}
             />
 
-            <PharmacyTable
-              items={filteredItems}
-              handleEdit={setEditItemData}
-              handleDelete={setDeleteItemData}
-              sellItem={setSellItemData}
-            />
+            {/* TABLE SAFE SCROLL ON MOBILE */}
+            <div className="overflow-x-auto">
+              <PharmacyTable
+                items={filteredItems}
+                handleEdit={setEditItemData}
+                handleDelete={setDeleteItemData}
+                sellItem={setSellItemData}
+              />
+            </div>
           </>
         )}
 
