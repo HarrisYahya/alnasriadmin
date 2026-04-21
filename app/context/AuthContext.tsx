@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { User, Session } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation"; // ✅ added
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
@@ -20,11 +20,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter(); // ✅ added
+  const router = useRouter();
 
   useEffect(() => {
+    if (typeof window === "undefined") return; // ✅ guard
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -40,26 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.error("Sign in error:", error);
-      return { error };
-    }
-    return { error: null };
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error };
   };
 
   const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      console.error("Sign up error:", error);
-      return { data, error };
-    }
     return { data, error };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    router.push("/login"); // ✅ FIX
+    router.push("/login");
   };
 
   return (
@@ -71,8 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }

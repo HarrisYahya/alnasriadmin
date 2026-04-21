@@ -7,7 +7,9 @@ import { AuthProvider } from "./context/AuthContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import { PatientProvider } from "./context/PatientContext";
 import { QueueProvider } from "./context/QueueContext";
-import { PharmacyProvider } from "./context/PharmacyContext"; // ✅ NEW
+import { PharmacyProvider } from "./context/PharmacyContext";
+
+export const dynamic = "force-dynamic"; // ✅ ADD THIS
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,7 +31,7 @@ export default function RootLayout({
             <PatientProvider>
               <AppointmentProvider>
                 <QueueProvider>
-                  <PharmacyProvider> {/* ✅ NEW WRAPPER */}
+                  <PharmacyProvider>
                     {children}
                   </PharmacyProvider>
                 </QueueProvider>
