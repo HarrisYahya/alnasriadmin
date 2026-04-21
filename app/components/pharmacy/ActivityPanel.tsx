@@ -7,14 +7,20 @@ export default function ActivityPanel() {
   const [logs, setLogs] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
-  const [limit, setLimit] = useState(10);
+
+  // NEW: control mode (default = false → show only 100)
+  const [showAll, setShowAll] = useState(false);
 
   const fetchLogs = async () => {
     let query = supabase
       .from("activity_logs")
       .select("*")
-      .order("created_at", { ascending: false })
-      .limit(limit);
+      .order("created_at", { ascending: false });
+
+    // default: only 100 recent logs
+    if (!showAll) {
+      query = query.limit(100);
+    }
 
     if (actionFilter !== "all") {
       query = query.eq("action", actionFilter);
@@ -25,10 +31,10 @@ export default function ActivityPanel() {
     if (data) setLogs(data);
   };
 
-  // 🔄 initial + filter reload
+  // 🔄 reload when filter or mode changes
   useEffect(() => {
     fetchLogs();
-  }, [actionFilter, limit]);
+  }, [actionFilter, showAll]);
 
   // ⚡ REALTIME SUBSCRIPTION
   useEffect(() => {
@@ -42,7 +48,16 @@ export default function ActivityPanel() {
           table: "activity_logs",
         },
         (payload) => {
-          setLogs((prev) => [payload.new, ...prev.slice(0, limit - 1)]);
+          setLogs((prev) => {
+            const updated = [payload.new, ...prev];
+
+            // if NOT showAll, keep only 100
+            if (!showAll) {
+              return updated.slice(0, 100);
+            }
+
+            return updated;
+          });
         }
       )
       .subscribe();
@@ -50,7 +65,7 @@ export default function ActivityPanel() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [limit]);
+  }, [showAll]);
 
   // 🎨 color by action
   const getColor = (action: string) => {
@@ -69,9 +84,9 @@ export default function ActivityPanel() {
     }
   };
 
-  // 🔍 filter by search text
+  // 🔍 search filter
   const filteredLogs = logs.filter((log) =>
-    log.description.toLowerCase().includes(search.toLowerCase())
+    log?.description?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -108,9 +123,7 @@ export default function ActivityPanel() {
             key={log.id}
             className="p-3 rounded-xl border border-white/10 bg-black/30"
           >
-            <p className={getColor(log.action)}>
-              {log.description}
-            </p>
+            <p className={getColor(log.action)}>{log.description}</p>
 
             <p className="text-xs text-gray-400 mt-1">
               {log.user_email || "Unknown"} •{" "}
@@ -124,14 +137,20 @@ export default function ActivityPanel() {
         )}
       </div>
 
-      {/* LOAD MORE */}
+      {/* LOAD MORE / SHOW ALL */}
       <div className="mt-4 text-center">
-        <button
-          onClick={() => setLimit((prev) => prev + 10)}
-          className="bg-cyan-600 px-4 py-2 rounded-xl text-sm"
-        >
-          Load More
-        </button>
+        {!showAll ? (
+          <button
+            onClick={() => setShowAll(true)}
+            className="bg-cyan-600 px-4 py-2 rounded-xl text-sm"
+          >
+            Load More (Show All)
+          </button>
+        ) : (
+          <p className="text-xs text-gray-400">
+            Showing all activity logs
+          </p>
+        )}
       </div>
     </div>
   );
