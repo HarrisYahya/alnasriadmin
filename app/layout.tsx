@@ -6,7 +6,8 @@ import { AppointmentProvider } from "./context/AppointmentContext";
 import { AuthProvider } from "./context/AuthContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import { PatientProvider } from "./context/PatientContext";
-import { QueueProvider } from "./context/QueueContext"; // ✅ ADD THIS
+import { QueueProvider } from "./context/QueueContext";
+import { PharmacyProvider } from "./context/PharmacyContext"; // ✅ NEW
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,8 +28,10 @@ export default function RootLayout({
           <SettingsProvider>
             <PatientProvider>
               <AppointmentProvider>
-                <QueueProvider>   {/* ✅ ADD THIS */}
-                  {children}
+                <QueueProvider>
+                  <PharmacyProvider> {/* ✅ NEW WRAPPER */}
+                    {children}
+                  </PharmacyProvider>
                 </QueueProvider>
               </AppointmentProvider>
             </PatientProvider>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePermissions } from "../hooks/usePermissions";
 
 interface SidebarProps {
   mobileMenuOpen: boolean;
@@ -9,8 +10,13 @@ interface SidebarProps {
   neonMode: boolean;
 }
 
-export default function Sidebar({ mobileMenuOpen, setMobileMenuOpen, neonMode }: SidebarProps) {
+export default function Sidebar({
+  mobileMenuOpen,
+  setMobileMenuOpen,
+  neonMode,
+}: SidebarProps) {
   const pathname = usePathname();
+  const { can } = usePermissions();
 
   const isActive = (path: string) => pathname === path;
 
@@ -38,6 +44,7 @@ export default function Sidebar({ mobileMenuOpen, setMobileMenuOpen, neonMode }:
         }
       `}
     >
+      {/* HEADER */}
       <div className="flex items-center gap-3 mb-12 mt-12 md:mt-0">
         <div
           className={`w-11 h-11 rounded-full flex items-center justify-center ${
@@ -48,6 +55,7 @@ export default function Sidebar({ mobileMenuOpen, setMobileMenuOpen, neonMode }:
         >
           <span className="text-white text-2xl">🦷</span>
         </div>
+
         <h2
           className={`text-2xl font-light tracking-wide ${
             neonMode ? "text-cyan-300" : "text-gray-800"
@@ -66,52 +74,81 @@ export default function Sidebar({ mobileMenuOpen, setMobileMenuOpen, neonMode }:
         </h2>
       </div>
 
+      {/* NAVIGATION */}
       <nav className="space-y-2">
-        <Link href="/" onClick={() => setMobileMenuOpen(false)} className={linkClass("/")}>
+
+        {/* ALWAYS AVAILABLE */}
+        <Link
+          href="/"
+          onClick={() => setMobileMenuOpen(false)}
+          className={linkClass("/")}
+        >
           <span>📊</span> Dashboard
         </Link>
 
-        <Link
-          href="/add-patient"
-          onClick={() => setMobileMenuOpen(false)}
-          className={linkClass("/add-patient")}
-        >
-          <span>➕</span> Add Patient
-        </Link>
+        {can("add_patient") && (
+          <Link
+            href="/add-patient"
+            onClick={() => setMobileMenuOpen(false)}
+            className={linkClass("/add-patient")}
+          >
+            <span>➕</span> Add Patient
+          </Link>
+        )}
 
-        <Link
-          href="/patients"
-          onClick={() => setMobileMenuOpen(false)}
-          className={linkClass("/patients")}
-        >
-          <span>👥</span> All Patients
-        </Link>
+        {can("view_patients") && (
+          <Link
+            href="/patients"
+            onClick={() => setMobileMenuOpen(false)}
+            className={linkClass("/patients")}
+          >
+            <span>👥</span> All Patients
+          </Link>
+        )}
 
-        <Link
-          href="/today-patients"
-          onClick={() => setMobileMenuOpen(false)}
-          className={linkClass("/today-patients")}
-        >
-          <span>📅</span> Today's Patients
-        </Link>
+        {can("view_queue") && (
+          <Link
+            href="/queue"
+            onClick={() => setMobileMenuOpen(false)}
+            className={linkClass("/queue")}
+          >
+            <span>📋</span> Queue
+          </Link>
+        )}
 
-        <Link
-          href="/calendar"
-          onClick={() => setMobileMenuOpen(false)}
-          className={linkClass("/calendar")}
-        >
-          <span>📆</span> Calendar
-        </Link>
+        {can("view_queue") && (
+          <Link
+            href="/today-patients"
+            onClick={() => setMobileMenuOpen(false)}
+            className={linkClass("/today-patients")}
+          >
+            <span>📅</span> Today Queue
+          </Link>
+        )}
 
-        <Link
-          href="/settings"
-          onClick={() => setMobileMenuOpen(false)}
-          className={linkClass("/settings")}
-        >
-          <span>⚙️</span> Settings
-        </Link>
+        {can("view_settings") && (
+          <Link
+            href="/settings"
+            onClick={() => setMobileMenuOpen(false)}
+            className={linkClass("/settings")}
+          >
+            <span>⚙️</span> Settings
+          </Link>
+        )}
+
+        {can("view_pharmacy") && (
+          <Link
+            href="/pharmacy"
+            onClick={() => setMobileMenuOpen(false)}
+            className={linkClass("/pharmacy")}
+          >
+            <span>💊</span> Pharmacy
+          </Link>
+        )}
+
       </nav>
 
+      {/* FOOTER */}
       <div
         className={`absolute bottom-8 left-8 text-xs tracking-wider hidden md:block ${
           neonMode ? "text-cyan-500/70" : "text-amber-400/80"

@@ -1,11 +1,17 @@
 import { supabase } from "./supabaseClient";
 
-export const getUserRole = async (email: string) => {
-  const { data } = await supabase
+export type Role = "admin" | "staff" | "pharmacy" | null;
+
+export const getUserRole = async (email: string): Promise<Role> => {
+  if (!email) return null;
+
+  const { data, error } = await supabase
     .from("staff")
     .select("role")
     .eq("email", email)
     .single();
 
-  return data?.role || "admin";
+  if (error || !data) return null;
+
+  return data.role as Role;
 };

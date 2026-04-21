@@ -1,14 +1,21 @@
- "use client";
+//app/context/QueueContext.tsx
+"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
+export type StageType = "cusub" | "so labtay";
+export type TalkedType = "lala hadlay" | "weli lala hadlin";
+
 export interface QueueItem {
   id?: string;
-  patient_id: string;
-  staff_id: string;
-  status: "waiting" | "in_progress" | "done";
-  created_at?: string;
+  name: string;
+  stage: "cusub" | "so labtay";
+  talked: "lala hadlay" | "weli lala hadlin";
+  service: string;
+  status: string;
+  ticket_number: number;
+  queue_day?: string;
 }
 
 interface QueueContextType {
@@ -16,6 +23,7 @@ interface QueueContextType {
   loading: boolean;
   addToQueue: (item: QueueItem) => Promise<void>;
   updateStatus: (id: string, status: QueueItem["status"]) => Promise<void>;
+  toggleTalked: (id: string, talked: TalkedType) => Promise<void>;
   removeFromQueue: (id: string) => Promise<void>;
 }
 
@@ -29,9 +37,9 @@ export const QueueProvider = ({ children }: { children: React.ReactNode }) => {
     const { data } = await supabase
       .from("queue")
       .select("*")
-      .order("created_at", { ascending: true });
+      .order("ticket_number", { ascending: true });
 
-    setQueue(data || []);
+    setQueue((data as QueueItem[]) || []);
     setLoading(false);
   };
 
@@ -39,13 +47,39 @@ export const QueueProvider = ({ children }: { children: React.ReactNode }) => {
     fetchQueue();
   }, []);
 
+  const getNextTicketNumber = async () => {
+    const { data } = await supabase
+      .from("queue")
+      .select("ticket_number")
+      .order("ticket_number", { ascending: false })
+      .limit(1);
+
+    return data && data.length > 0 ? data[0].ticket_number + 1 : 1;
+  };
+
   const addToQueue = async (item: QueueItem) => {
-    await supabase.from("queue").insert(item);
+    const ticket = await getNextTicketNumber();
+
+    await supabase.from("queue").insert({
+      ...item,
+      ticket_number: ticket,
+    });
+
     fetchQueue();
   };
 
   const updateStatus = async (id: string, status: QueueItem["status"]) => {
     await supabase.from("queue").update({ status }).eq("id", id);
+    fetchQueue();
+  };
+
+  const toggleTalked = async (id: string, talked: TalkedType) => {
+    const newValue =
+      talked === "weli lala hadlin"
+        ? "lala hadlay"
+        : "weli lala hadlin";
+
+    await supabase.from("queue").update({ talked: newValue }).eq("id", id);
     fetchQueue();
   };
 
@@ -56,7 +90,14 @@ export const QueueProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <QueueContext.Provider
-      value={{ queue, loading, addToQueue, updateStatus, removeFromQueue }}
+      value={{
+        queue,
+        loading,
+        addToQueue,
+        updateStatus,
+        toggleTalked,
+        removeFromQueue,
+      }}
     >
       {children}
     </QueueContext.Provider>
