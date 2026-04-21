@@ -1,52 +1,29 @@
 export type Role = "admin" | "staff" | "pharmacy";
 
 export type Permission =
-  | "view_dashboard"
-  | "add_patient"
-  | "view_patients"
-  | "view_queue"
-  | "manage_queue"
-  | "view_pharmacy"
-  | "manage_pharmacy"
-  | "view_settings";
+  | "queue_add"
+  | "queue_talk"
+  | "queue_done"
+  | "queue_delete";
 
 const rolePermissions: Record<Role, Permission[]> = {
-  admin: [
-    "view_dashboard",
-    "add_patient",
-    "view_patients",
-    "view_queue",
-    "manage_queue",
-    "view_pharmacy",
-    "manage_pharmacy",
-    "view_settings",
-  ],
+  admin: ["queue_add", "queue_talk", "queue_done", "queue_delete"],
 
   staff: [
-    "view_dashboard",
-    "add_patient",
-    "view_queue",
-    "manage_queue",
+    "queue_add",
+    "queue_done"
+    // admin can change this later
   ],
 
-  pharmacy: [
-    "view_dashboard",
-    "view_pharmacy",
-    "manage_pharmacy",
-  ],
+  pharmacy: [],
 };
 
-// 🔥 SAFE FUNCTION (THIS IS THE KEY FIX)
 export const hasPermission = (
   role: string | null | undefined,
   permission: Permission
 ) => {
   if (!role) return false;
+  if (!(role in rolePermissions)) return false;
 
-  // Convert unsafe string → safe Role
-  if (role !== "admin" && role !== "staff" && role !== "pharmacy") {
-    return false;
-  }
-
-  return rolePermissions[role].includes(permission);
+  return rolePermissions[role as Role].includes(permission);
 };

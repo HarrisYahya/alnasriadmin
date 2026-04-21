@@ -1,3 +1,4 @@
+//app/lib/roleGuard.ts
 import { supabase } from "./supabaseClient";
 
 export type Role = "admin" | "staff" | "pharmacy" | null;

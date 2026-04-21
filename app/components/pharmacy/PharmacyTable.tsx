@@ -1,17 +1,32 @@
 "use client";
 
+import { useSettings } from "../../context/SettingsContext";
+
 export default function PharmacyTable({
   items,
   handleEdit,
   handleDelete,
   sellItem,
 }: any) {
-  return (
-    <div className="rounded-2xl border border-cyan-500/30 overflow-hidden">
+  const { settings } = useSettings();
+  const isNeon = settings.theme === "neon";
 
+  return (
+    <div
+      className={`
+        rounded-2xl overflow-hidden border
+        ${
+          isNeon
+            ? "bg-black/40 border-cyan-500/30 text-white"
+            : "bg-white border-gray-200 text-black"
+        }
+      `}
+    >
       <table className="w-full text-left">
 
-        <thead className="bg-black/60 text-cyan-400">
+        <thead
+          className={isNeon ? "bg-black/60 text-cyan-300" : "bg-gray-100"}
+        >
           <tr>
             <th className="p-3">Name</th>
             <th>Qty</th>
@@ -23,55 +38,36 @@ export default function PharmacyTable({
 
         <tbody>
           {items?.map((i: any) => (
-            <tr key={i.id} className="border-t border-gray-800">
+            <tr
+              key={i.id}
+              className="border-t border-gray-700/20"
+            >
 
-              {/* NAME */}
               <td className="p-3">{i.name}</td>
-
-              {/* QTY */}
               <td>{i.quantity}</td>
-
-              {/* PRICE */}
               <td>${i.price}</td>
 
-              {/* STATUS */}
               <td>
                 {i.quantity === 0 ? (
-                  <span className="text-red-500 text-xs font-bold">
-                    OUT
-                  </span>
+                  <span className="text-red-500 text-xs">OUT</span>
                 ) : i.quantity <= 5 ? (
-                  <span className="text-red-400 text-xs">
-                    LOW
-                  </span>
+                  <span className="text-yellow-400 text-xs">LOW</span>
                 ) : (
-                  <span className="text-green-400 text-xs">
-                    OK
-                  </span>
+                  <span className="text-green-400 text-xs">OK</span>
                 )}
               </td>
 
-              {/* ACTIONS */}
-              <td className="space-x-2">
+              <td className="space-x-2 text-sm">
 
-                <button
-                  onClick={() => handleEdit(i)}
-                  className="text-yellow-400"
-                >
+                <button className="text-yellow-400" onClick={() => handleEdit(i)}>
                   Edit
                 </button>
 
-                <button
-                  onClick={() => handleDelete(i)}
-                  className="text-red-400"
-                >
+                <button className="text-red-400" onClick={() => handleDelete(i)}>
                   Delete
                 </button>
 
-                <button
-                  onClick={() => sellItem(i)}
-                  className="text-cyan-300"
-                >
+                <button className="text-cyan-300" onClick={() => sellItem(i)}>
                   Sell
                 </button>
 
@@ -82,7 +78,6 @@ export default function PharmacyTable({
         </tbody>
 
       </table>
-
     </div>
   );
 }

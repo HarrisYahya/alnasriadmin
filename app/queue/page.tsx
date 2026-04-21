@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQueue } from "../context/QueueContext";
 import { useSettings } from "../context/SettingsContext";
 import { useAuth } from "../context/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 
 export const servicesList = [
   { name: "Braces Upper", fee: 25, perTooth: false },
@@ -25,6 +26,7 @@ export default function QueuePage() {
 
   const { settings } = useSettings();
   const { signOut } = useAuth();
+  const { can } = usePermissions();
 
   const [neonMode, setNeonMode] = useState(settings.theme === "neon");
 
@@ -40,17 +42,16 @@ export default function QueuePage() {
     const somali = new Date(
       now.toLocaleString("en-US", { timeZone: "Africa/Mogadishu" })
     );
-
     somali.setHours(somali.getHours() - 6);
     return somali.toISOString().split("T")[0];
   };
 
   const todayKey = getSomaliQueueDay();
-
   const todayQueue = queue.filter((q) => q.queue_day === todayKey);
 
   const handleAdd = async () => {
     if (!name || !service) return;
+    if (!can("queue_add")) return;
 
     const nextTicket = todayQueue.length + 1;
 
@@ -127,58 +128,60 @@ export default function QueuePage() {
       </div>
 
       {/* FORM */}
-      <div
-        className={`rounded-2xl p-5 mb-6 grid md:grid-cols-5 gap-3 ${
-          neonMode
-            ? "bg-black/60 border border-cyan-500/30"
-            : "bg-white border border-amber-100"
-        }`}
-      >
-        <input
-          className={inputStyle}
-          placeholder="Patient name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <select
-          className={inputStyle}
-          value={stage}
-          onChange={(e) => setStage(e.target.value as any)}
+      {can("queue_add") && (
+        <div
+          className={`rounded-2xl p-5 mb-6 grid md:grid-cols-5 gap-3 ${
+            neonMode
+              ? "bg-black/60 border border-cyan-500/30"
+              : "bg-white border border-amber-100"
+          }`}
         >
-          <option value="cusub">Cusub</option>
-          <option value="so labtay">So labtay</option>
-        </select>
+          <input
+            className={inputStyle}
+            placeholder="Patient name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-        <select
-          className={inputStyle}
-          value={talked}
-          onChange={(e) => setTalked(e.target.value as any)}
-        >
-          <option value="weli lala hadlin">Weli lala hadlin</option>
-          <option value="lala hadlay">Lala hadlay</option>
-        </select>
+          <select
+            className={inputStyle}
+            value={stage}
+            onChange={(e) => setStage(e.target.value as any)}
+          >
+            <option value="cusub">Cusub</option>
+            <option value="so labtay">So labtay</option>
+          </select>
 
-        <select
-          className={inputStyle}
-          value={service}
-          onChange={(e) => setService(e.target.value)}
-        >
-          <option value="">Service</option>
-          {servicesList.map((s) => (
-            <option key={s.name} value={s.name}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+          <select
+            className={inputStyle}
+            value={talked}
+            onChange={(e) => setTalked(e.target.value as any)}
+          >
+            <option value="weli lala hadlin">Weli lala hadlin</option>
+            <option value="lala hadlay">Lala hadlay</option>
+          </select>
 
-        <button
-          onClick={handleAdd}
-          className="bg-linear-to-r from-cyan-500 to-purple-600 text-white rounded-xl px-4 py-2"
-        >
-          Add
-        </button>
-      </div>
+          <select
+            className={inputStyle}
+            value={service}
+            onChange={(e) => setService(e.target.value)}
+          >
+            <option value="">Service</option>
+            {servicesList.map((s) => (
+              <option key={s.name} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={handleAdd}
+            className="bg-linear-to-r from-cyan-500 to-purple-600 text-white rounded-xl px-4 py-2"
+          >
+            Add
+          </button>
+        </div>
+      )}
 
       {/* TABLE */}
       <div className="overflow-x-auto rounded-2xl border border-cyan-500/20">
@@ -207,62 +210,42 @@ export default function QueuePage() {
 
           <tbody>
             {todayQueue.map((q) => (
-              <tr
-                key={q.id}
-                className={`border-t ${
-                  neonMode
-                    ? "border-gray-800 hover:bg-gray-900/40"
-                    : "border-amber-100 hover:bg-amber-50"
-                } ${
-                  q.status === "done"
-                    ? neonMode
-                      ? "line-through text-green-400 bg-green-500/5 border-green-500/40"
-                      : "line-through text-green-700 bg-green-100 border-green-300"
-                    : ""
-                }`}
-              >
-                <td className="px-4 py-3 font-mono">{q.ticket_number}</td>
+              <tr key={q.id}>
+                <td className="px-4 py-3">{q.ticket_number}</td>
                 <td className="px-4 py-3">{q.name}</td>
                 <td className="px-4 py-3">{q.stage}</td>
 
-                <td className="px-4 py-3">
-                  {q.stage === "cusub" && (
-                    <span
-                      className={`px-2 py-1 rounded-lg text-xs font-semibold ${
-                        q.talked === "lala hadlay"
-                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                          : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                      }`}
-                    >
-                      {q.talked}
-                    </span>
-                  )}
-                </td>
-
+                <td className="px-4 py-3">{q.talked}</td>
                 <td className="px-4 py-3">{q.service}</td>
                 <td className="px-4 py-3">{q.status}</td>
 
                 <td className="px-4 py-3 flex gap-2">
-                  <button
-                    onClick={() => toggleTalked(q.id!, q.talked)}
-                    className="px-2 py-1 bg-yellow-500 text-black rounded"
-                  >
-                    Talk
-                  </button>
+                  {can("queue_talk") && (
+                    <button
+                      onClick={() => toggleTalked(q.id!, q.talked)}
+                      className="px-2 py-1 bg-yellow-500 text-black rounded"
+                    >
+                      Talk
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => updateStatus(q.id!, "done")}
-                    className="px-2 py-1 bg-green-500 text-black rounded"
-                  >
-                    Done
-                  </button>
+                  {can("queue_done") && (
+                    <button
+                      onClick={() => updateStatus(q.id!, "done")}
+                      className="px-2 py-1 bg-green-500 text-black rounded"
+                    >
+                      Done
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => removeFromQueue(q.id!)}
-                    className="px-2 py-1 bg-red-500 text-black rounded"
-                  >
-                    Delete
-                  </button>
+                  {can("queue_delete") && (
+                    <button
+                      onClick={() => removeFromQueue(q.id!)}
+                      className="px-2 py-1 bg-red-500 text-black rounded"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

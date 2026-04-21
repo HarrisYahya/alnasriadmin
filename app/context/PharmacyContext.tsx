@@ -14,7 +14,9 @@ interface PharmacyContextType {
   items: PharmacyItem[];
   addItem: (item: PharmacyItem) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
-  refreshItems: () => Promise<void>; // ✅ ADD THIS
+  refreshItems: () => Promise<void>;
+  refreshKey: number;
+  triggerRefresh: () => void;
 }
 
 const PharmacyContext = createContext<PharmacyContextType>(
@@ -23,8 +25,10 @@ const PharmacyContext = createContext<PharmacyContextType>(
 
 export const PharmacyProvider = ({ children }: any) => {
   const [items, setItems] = useState<PharmacyItem[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // 🔄 LOAD ITEMS
+  const triggerRefresh = () => setRefreshKey((p) => p + 1);
+
   const refreshItems = async () => {
     const { data } = await supabase
       .from("pharmacy_items")
@@ -36,18 +40,16 @@ export const PharmacyProvider = ({ children }: any) => {
 
   useEffect(() => {
     refreshItems();
-  }, []);
+  }, [refreshKey]);
 
-  // ➕ ADD
   const addItem = async (item: PharmacyItem) => {
     await supabase.from("pharmacy_items").insert(item);
-    refreshItems();
+    triggerRefresh();
   };
 
-  // ❌ DELETE
   const deleteItem = async (id: string) => {
     await supabase.from("pharmacy_items").delete().eq("id", id);
-    refreshItems();
+    triggerRefresh();
   };
 
   return (
@@ -56,7 +58,9 @@ export const PharmacyProvider = ({ children }: any) => {
         items,
         addItem,
         deleteItem,
-        refreshItems, // ✅ RETURN IT
+        refreshItems,
+        refreshKey,
+        triggerRefresh,
       }}
     >
       {children}

@@ -1,3 +1,4 @@
+//app/components/PatientsTable.tsx
 "use client";
 
 import { Patient } from "../context/PatientContext";

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePermissions } from "../hooks/usePermissions";
 
 interface SidebarProps {
   mobileMenuOpen: boolean;
@@ -16,7 +15,6 @@ export default function Sidebar({
   neonMode,
 }: SidebarProps) {
   const pathname = usePathname();
-  const { can } = usePermissions();
 
   const isActive = (path: string) => pathname === path;
 
@@ -31,6 +29,8 @@ export default function Sidebar({
         : "text-gray-600 hover:bg-amber-50/50 hover:text-amber-600"
     }`;
 
+  const closeMobile = () => setMobileMenuOpen(false);
+
   return (
     <aside
       className={`
@@ -44,7 +44,6 @@ export default function Sidebar({
         }
       `}
     >
-      {/* HEADER */}
       <div className="flex items-center gap-3 mb-12 mt-12 md:mt-0">
         <div
           className={`w-11 h-11 rounded-full flex items-center justify-center ${
@@ -74,81 +73,52 @@ export default function Sidebar({
         </h2>
       </div>
 
-      {/* NAVIGATION */}
       <nav className="space-y-2">
-
-        {/* ALWAYS AVAILABLE */}
-        <Link
-          href="/"
-          onClick={() => setMobileMenuOpen(false)}
-          className={linkClass("/")}
-        >
+        <Link href="/" onClick={closeMobile} className={linkClass("/")}>
           <span>📊</span> Dashboard
         </Link>
 
-        {can("add_patient") && (
-          <Link
-            href="/add-patient"
-            onClick={() => setMobileMenuOpen(false)}
-            className={linkClass("/add-patient")}
-          >
-            <span>➕</span> Add Patient
-          </Link>
-        )}
+        <Link
+          href="/add-patient"
+          onClick={closeMobile}
+          className={linkClass("/add-patient")}
+        >
+          <span>➕</span> Add Patient
+        </Link>
 
-        {can("view_patients") && (
-          <Link
-            href="/patients"
-            onClick={() => setMobileMenuOpen(false)}
-            className={linkClass("/patients")}
-          >
-            <span>👥</span> All Patients
-          </Link>
-        )}
+        <Link
+          href="/patients"
+          onClick={closeMobile}
+          className={linkClass("/patients")}
+        >
+          <span>👥</span> All Patients
+        </Link>
 
-        {can("view_queue") && (
-          <Link
-            href="/queue"
-            onClick={() => setMobileMenuOpen(false)}
-            className={linkClass("/queue")}
-          >
-            <span>📋</span> Queue
-          </Link>
-        )}
+        <Link
+          href="/today-patients"
+          onClick={closeMobile}
+          className={linkClass("/today-patients")}
+        >
+          <span>📅</span> Today's Patients
+        </Link>
 
-        {can("view_queue") && (
-          <Link
-            href="/today-patients"
-            onClick={() => setMobileMenuOpen(false)}
-            className={linkClass("/today-patients")}
-          >
-            <span>📅</span> Today Queue
-          </Link>
-        )}
+        <Link
+          href="/calendar"
+          onClick={closeMobile}
+          className={linkClass("/calendar")}
+        >
+          <span>📆</span> Calendar
+        </Link>
 
-        {can("view_settings") && (
-          <Link
-            href="/settings"
-            onClick={() => setMobileMenuOpen(false)}
-            className={linkClass("/settings")}
-          >
-            <span>⚙️</span> Settings
-          </Link>
-        )}
-
-        {can("view_pharmacy") && (
-          <Link
-            href="/pharmacy"
-            onClick={() => setMobileMenuOpen(false)}
-            className={linkClass("/pharmacy")}
-          >
-            <span>💊</span> Pharmacy
-          </Link>
-        )}
-
+        <Link
+          href="/settings"
+          onClick={closeMobile}
+          className={linkClass("/settings")}
+        >
+          <span>⚙️</span> Settings
+        </Link>
       </nav>
 
-      {/* FOOTER */}
       <div
         className={`absolute bottom-8 left-8 text-xs tracking-wider hidden md:block ${
           neonMode ? "text-cyan-500/70" : "text-amber-400/80"

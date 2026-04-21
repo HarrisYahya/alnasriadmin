@@ -27,54 +27,61 @@ export default function EditModal({ item, onClose, onSave }: any) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-gray-900 p-6 rounded-xl w-80 text-white border border-cyan-500/30">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
 
-        <h2 className="text-cyan-300 text-lg mb-3">
+      <div className="w-[90%] max-w-sm rounded-2xl border border-cyan-500/30 bg-white/5 backdrop-blur-xl shadow-2xl shadow-cyan-500/10 p-6 text-white animate-in fade-in zoom-in duration-200">
+
+        <h2 className="text-cyan-300 text-lg font-semibold mb-5">
           Edit Item
         </h2>
 
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full p-2 mb-2 rounded bg-black/60 border border-cyan-500/30"
-          placeholder="Name"
-        />
+        <div className="space-y-3">
 
-        <input
-          type="number"
-          value={qty}
-          onChange={(e) =>
-            setQty(e.target.value === "" ? "" : Number(e.target.value))
-          }
-          className="w-full p-2 mb-2 rounded bg-black/60 border border-cyan-500/30"
-          placeholder="Quantity"
-        />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Item name"
+            className="w-full p-3 rounded-xl bg-black/40 border border-cyan-500/20 focus:border-cyan-400 outline-none"
+          />
 
-        <input
-          type="number"
-          value={price}
-          onChange={(e) =>
-            setPrice(e.target.value === "" ? "" : Number(e.target.value))
-          }
-          className="w-full p-2 mb-4 rounded bg-black/60 border border-cyan-500/30"
-          placeholder="Price"
-        />
+          <input
+            type="number"
+            value={qty}
+            onChange={(e) =>
+              setQty(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            placeholder="Quantity"
+            className="w-full p-3 rounded-xl bg-black/40 border border-cyan-500/20 focus:border-cyan-400 outline-none"
+          />
 
-        <div className="flex gap-2">
+          <input
+            type="number"
+            value={price}
+            onChange={(e) =>
+              setPrice(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            placeholder="Price"
+            className="w-full p-3 rounded-xl bg-black/40 border border-cyan-500/20 focus:border-cyan-400 outline-none"
+          />
+
+        </div>
+
+        <div className="flex gap-3 mt-6">
+
           <button
             onClick={handleSave}
-            className="flex-1 bg-cyan-600 p-2 rounded"
+            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 transition shadow-lg shadow-cyan-500/20"
           >
             Save
           </button>
 
           <button
             onClick={onClose}
-            className="flex-1 bg-gray-600 p-2 rounded"
+            className="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition border border-white/10"
           >
             Cancel
           </button>
+
         </div>
 
       </div>

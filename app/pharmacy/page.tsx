@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { usePharmacy } from "../context/PharmacyContext";
 import { supabase } from "../lib/supabaseClient";
+import { logActivity } from "../lib/activityLogger";
 
 import PharmacySidebar from "../components/pharmacy/PharmacySidebar";
 import PharmacyHeader from "../components/pharmacy/PharmacyHeader";
@@ -16,9 +17,20 @@ import SellModal from "../components/pharmacy/SellModal";
 import EditModal from "../components/pharmacy/EditModal";
 import DeleteModal from "../components/pharmacy/DeleteModal";
 
+import ERPDashboard from "../components/pharmacy/ERPDashboard";
+import BestSellers from "../components/pharmacy/BestSellers";
+
 export default function PharmacyPage() {
   const { session, signOut } = useAuth();
-  const { items, addItem, deleteItem, refreshItems } = usePharmacy();
+
+  const {
+    items,
+    addItem,
+    deleteItem,
+    refreshItems,
+    triggerRefresh, // ✅ IMPORTANT FIX
+  } = usePharmacy();
+
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -26,17 +38,16 @@ export default function PharmacyPage() {
   const [price, setPrice] = useState<number | "">("");
 
   const [search, setSearch] = useState("");
-  const [editId, setEditId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState("dashboard");
 
   const [receipt, setReceipt] = useState<any>(null);
   const [sellItemData, setSellItemData] = useState<any>(null);
-
   const [editItemData, setEditItemData] = useState<any>(null);
   const [deleteItemData, setDeleteItemData] = useState<any>(null);
 
-  const [page, setPage] = useState("inventory");
-
+  // 🔐 ROLE CHECK
   useEffect(() => {
     const checkRole = async () => {
       if (!session?.user?.email) return;
@@ -55,6 +66,7 @@ export default function PharmacyPage() {
     checkRole();
   }, [session, router]);
 
+  // ➕ ADD ITEM
   const handleSave = async () => {
     if (!name.trim()) return;
 
@@ -66,55 +78,40 @@ export default function PharmacyPage() {
       price: Number(price) || 0,
     };
 
-    if (editId) {
-      await supabase
-        .from("pharmacy_items")
-        .update(payload)
-        .eq("id", editId);
-    } else {
-      await addItem(payload);
-    }
+    await addItem(payload);
+
+    await logActivity({
+      action: "add",
+      description: `Added item ${name}`,
+      user_email: session?.user?.email,
+    });
 
     setName("");
     setQty("");
     setPrice("");
-    setEditId(null);
     setLoading(false);
 
     refreshItems();
+    triggerRefresh(); // 🔥 FIX DASHBOARD UPDATE
   };
 
-  const handleEdit = (item: any) => {
-    setEditItemData(item);
-  };
-
-  const saveEdit = async (updated: any) => {
-    await supabase
-      .from("pharmacy_items")
-      .update({
-        name: updated.name,
-        quantity: updated.quantity,
-        price: updated.price,
-      })
-      .eq("id", updated.id);
-
-    setEditItemData(null);
-    refreshItems();
-  };
-
-  const handleDelete = (item: any) => {
-    setDeleteItemData(item);
-  };
-
+  // ❌ DELETE
   const confirmDelete = async (id: string) => {
     await deleteItem(id);
+
+    await logActivity({
+      action: "delete",
+      description: `Deleted item`,
+      user_email: session?.user?.email,
+    });
+
     setDeleteItemData(null);
+
+    refreshItems();
+    triggerRefresh(); // 🔥 FIX DASHBOARD UPDATE
   };
 
-  const sellItem = (item: any) => {
-    setSellItemData(item);
-  };
-
+  // 💊 SELL ITEM (MAIN FIX)
   const confirmSell = async (qtyToSell: number) => {
     const item = sellItemData;
     if (!item) return;
@@ -139,7 +136,11 @@ export default function PharmacyPage() {
       })
       .eq("id", item.id);
 
-    refreshItems();
+    await logActivity({
+      action: "sell",
+      description: `Sold ${qtyToSell} ${item.name}`,
+      user_email: session?.user?.email,
+    });
 
     setReceipt({
       name: item.name,
@@ -148,6 +149,9 @@ export default function PharmacyPage() {
     });
 
     setSellItemData(null);
+
+    refreshItems();
+    triggerRefresh(); // 🔥 FIX DASHBOARD + SALES + TABLE
   };
 
   const filteredItems = items.filter((i) =>
@@ -164,18 +168,15 @@ export default function PharmacyPage() {
   return (
     <div className="flex min-h-screen bg-black text-white">
 
-      <PharmacySidebar
-        onNavigate={setPage}
-        signOut={signOut}
-      />
+      {/* SIDEBAR */}
+      <PharmacySidebar onNavigate={setPage} signOut={signOut} />
 
       <div className="flex-1 ml-64 p-6 space-y-6">
 
-        <PharmacyHeader
-          signOut={signOut}
-          totalValue={totalValue}
-        />
+        {/* HEADER */}
+        <PharmacyHeader signOut={signOut} totalValue={totalValue} />
 
+        {/* STATS */}
         <div className="grid grid-cols-3 gap-4">
 
           <div className="bg-black/40 p-4 rounded-xl border border-cyan-500/20">
@@ -195,12 +196,18 @@ export default function PharmacyPage() {
 
         </div>
 
+        {/* DASHBOARD */}
+        {page === "dashboard" && (
+          <div className="space-y-6">
+            <ERPDashboard />
+            <BestSellers />
+          </div>
+        )}
+
+        {/* INVENTORY */}
         {page === "inventory" && (
           <>
-            <PharmacySearch
-              search={search}
-              setSearch={setSearch}
-            />
+            <PharmacySearch search={search} setSearch={setSearch} />
 
             <PharmacyForm
               name={name}
@@ -211,24 +218,21 @@ export default function PharmacyPage() {
               setPrice={setPrice}
               handleSave={handleSave}
               loading={loading}
-              editId={editId}
             />
 
             <PharmacyTable
               items={filteredItems}
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              sellItem={sellItem}
+              handleEdit={setEditItemData}
+              handleDelete={setDeleteItemData}
+              sellItem={setSellItemData}
             />
           </>
         )}
 
       </div>
 
-      <ReceiptModal
-        sale={receipt}
-        onClose={() => setReceipt(null)}
-      />
+      {/* MODALS */}
+      <ReceiptModal sale={receipt} onClose={() => setReceipt(null)} />
 
       <SellModal
         item={sellItemData}
@@ -239,7 +243,11 @@ export default function PharmacyPage() {
       <EditModal
         item={editItemData}
         onClose={() => setEditItemData(null)}
-        onSave={saveEdit}
+        onSave={async () => {
+          setEditItemData(null);
+          refreshItems();
+          triggerRefresh();
+        }}
       />
 
       <DeleteModal
