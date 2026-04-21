@@ -14,14 +14,13 @@ export const usePermissions = () => {
   });
 
   useEffect(() => {
-    const load = async () => {
-      const email = session?.user?.email;
-      if (!email) return;
+    if (!session?.user?.email) return;
 
+    const load = async () => {
       const { data } = await supabase
         .from("staff")
         .select("permissions")
-        .eq("email", email)
+        .eq("email", session.user.email)
         .single();
 
       if (data?.permissions) {

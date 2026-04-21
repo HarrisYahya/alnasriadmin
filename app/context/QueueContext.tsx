@@ -1,5 +1,4 @@
-//app/context/QueueContext.tsx
-"use client";
+ "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
@@ -34,6 +33,8 @@ export const QueueProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchQueue = async () => {
+    if (typeof window === "undefined") return;
+
     const { data } = await supabase
       .from("queue")
       .select("*")
