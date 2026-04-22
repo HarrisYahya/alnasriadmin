@@ -1,8 +1,9 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { useRole } from "../hooks/useRole";
 import { useAuth } from "../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 type Props = {
   children: ReactNode;
@@ -12,6 +13,24 @@ type Props = {
 export default function ProtectedRoute({ children, allowed }: Props) {
   const { session } = useAuth();
   const { role, loading } = useRole();
+  const router = useRouter();
+
+  const redirected = useRef(false);
+
+  useEffect(() => {
+    if (loading || redirected.current) return;
+
+    if (!session) {
+      redirected.current = true;
+      router.replace("/login");
+      return;
+    }
+
+    if (!role || !allowed.includes(role)) {
+      redirected.current = true;
+      router.replace("/");
+    }
+  }, [session, role, loading, router, allowed]);
 
   if (loading) {
     return (
@@ -19,14 +38,6 @@ export default function ProtectedRoute({ children, allowed }: Props) {
         Loading...
       </div>
     );
-  }
-
-  if (!session) {
-    return <div>Unauthorized</div>;
-  }
-
-  if (!role || !allowed.includes(role)) {
-    return <div>Access Denied</div>;
   }
 
   return <>{children}</>;

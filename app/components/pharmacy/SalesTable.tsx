@@ -1,3 +1,4 @@
+//app/components/pharmacy/SalesTable.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -45,12 +46,22 @@ export default function SalesTable() {
         <tbody>
           {sales.map((s) => (
             <tr key={s.id} className="border-t border-gray-700/20">
-              <td className="p-3">{s.item_id}</td>
-              <td>{s.quantity}</td>
-              <td>${s.total_price}</td>
-              <td className="text-xs text-gray-400">
-                {new Date(s.created_at).toLocaleString()}
+
+              {/* ✅ FIX: show name instead of ID */}
+              <td className="p-3">
+                {s.item_name || "Unknown Item"}
               </td>
+
+              <td>{s.quantity}</td>
+
+              <td>${s.total_price}</td>
+
+              <td className="text-xs text-gray-400">
+                {s.created_at
+                  ? new Date(s.created_at).toLocaleString()
+                  : ""}
+              </td>
+
             </tr>
           ))}
         </tbody>

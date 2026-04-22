@@ -1,3 +1,4 @@
+//app/components/pharmacy/PharmacyTable.tsx
 "use client";
 
 import { useSettings } from "../../context/SettingsContext";
