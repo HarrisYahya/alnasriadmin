@@ -1,3 +1,4 @@
+//app/components/pharmacy/ActivityPanel.tsx
 "use client";
 
 import { useEffect, useState } from "react";

@@ -1,4 +1,4 @@
-"use client";
+"use client"; 
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -102,6 +102,7 @@ export default function PharmacyPage() {
 
     const total = qtyToSell * item.price;
 
+    // ✅ Save sale
     await supabase.from("sales").insert({
       item_id: String(item.id),
       item_name: item.name,
@@ -109,6 +110,7 @@ export default function PharmacyPage() {
       total_price: total,
     });
 
+    // ✅ Update stock
     await supabase
       .from("pharmacy_items")
       .update({
@@ -116,6 +118,14 @@ export default function PharmacyPage() {
       })
       .eq("id", item.id);
 
+    // 🔥 FIXED: use object style (your logger format)
+    await logActivity({
+      action: "sell",
+      description: `Sold ${qtyToSell} x ${item.name} for $${total}`,
+      user_email: session?.user?.email || "Unknown",
+    });
+
+    // ✅ Receipt (unchanged)
     setReceipt({
       name: item.name,
       quantity: qtyToSell,

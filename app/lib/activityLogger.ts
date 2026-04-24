@@ -1,3 +1,4 @@
+//app/lib/activityLogger.ts
 import { supabase } from "./supabaseClient";
 
 export const logActivity = async ({

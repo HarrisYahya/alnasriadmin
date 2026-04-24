@@ -50,13 +50,12 @@ export default function QueuePage() {
   };
 
   const todayKey = getSomaliQueueDay();
+
   const todayQueue = queue.filter((q) => q.queue_day === todayKey);
 
   const handleAdd = async () => {
     if (!name || !service) return;
     if (!can("queue_add")) return;
-
-    const nextTicket = todayQueue.length + 1;
 
     await addToQueue({
       name,
@@ -64,7 +63,7 @@ export default function QueuePage() {
       talked,
       service,
       status: "waiting",
-      ticket_number: nextTicket,
+      ticket_number: 0,
       queue_day: todayKey,
     });
 
@@ -122,8 +121,8 @@ export default function QueuePage() {
               onClick={signOut}
               className={`px-4 py-2 rounded-xl text-sm font-semibold ${
                 neonMode
-                  ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                  : "bg-red-100 text-red-600 border border-red-300"
+                  ? "bg-red-500/20 text-red-300"
+                  : "bg-red-100 text-red-600"
               }`}
             >
               Logout
@@ -188,7 +187,7 @@ export default function QueuePage() {
         )}
 
         {/* TABLE */}
-        <div className="overflow-x-auto rounded-2xl border border-cyan-500/20">
+        <div className="overflow-x-auto rounded-2xl">
           <table
             className={`w-full text-left ${
               neonMode ? "text-white" : "text-gray-900"
@@ -214,43 +213,98 @@ export default function QueuePage() {
 
             <tbody>
               {todayQueue.map((q) => (
-                <tr key={q.id}>
-                  <td className="px-4 py-3">{q.ticket_number}</td>
-                  <td className="px-4 py-3">{q.name}</td>
-                  <td className="px-4 py-3">{q.stage}</td>
-                  <td className="px-4 py-3">{q.talked}</td>
-                  <td className="px-4 py-3">{q.service}</td>
-                  <td className="px-4 py-3">{q.status}</td>
+                <tr
+  key={q.id}
+  className={`transition ${
+    q.status === "done"
+      ? neonMode
+        ? "border-l-4 border-green-400 bg-black/20"
+        : "border-l-4 border-green-500 bg-white"
+      : "border-l-4 border-transparent"
+  }`}
+>
+  <td className="px-4 py-3 font-semibold">{q.ticket_number}</td>
+  <td className="px-4 py-3">{q.name}</td>
 
-                  <td className="px-4 py-3 flex gap-2">
-                    {can("queue_talk") && (
-                      <button
-                        onClick={() => toggleTalked(q.id!, q.talked)}
-                        className="px-2 py-1 bg-yellow-500 text-black rounded"
-                      >
-                        Talk
-                      </button>
-                    )}
+  {/* ✅ CLEAN STAGE (NO BORDER BADGE) */}
+  <td className="px-4 py-3">
+    <span
+      className={`text-sm font-medium ${
+        q.stage === "cusub"
+          ? neonMode
+            ? "text-cyan-300"
+            : "text-blue-600"
+          : neonMode
+          ? "text-purple-300"
+          : "text-purple-600"
+      }`}
+    >
+      {q.stage}
+    </span>
+  </td>
 
-                    {can("queue_done") && (
-                      <button
-                        onClick={() => updateStatus(q.id!, "done")}
-                        className="px-2 py-1 bg-green-500 text-black rounded"
-                      >
-                        Done
-                      </button>
-                    )}
+  {/* ✅ CLEAN TALKED (NO BORDER BADGE) */}
+  <td className="px-4 py-3">
+    <span
+      className={`text-sm font-medium ${
+        q.talked === "lala hadlay"
+          ? neonMode
+            ? "text-green-300"
+            : "text-green-600"
+          : neonMode
+          ? "text-red-300"
+          : "text-red-600"
+      }`}
+    >
+      {q.talked}
+    </span>
+  </td>
 
-                    {can("queue_delete") && (
-                      <button
-                        onClick={() => removeFromQueue(q.id!)}
-                        className="px-2 py-1 bg-red-500 text-black rounded"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </td>
-                </tr>
+  <td className="px-4 py-3">{q.service}</td>
+
+  {/* STATUS */}
+  <td className="px-4 py-3">
+    {q.status === "done" ? (
+      <span className="text-green-500 font-semibold">Done</span>
+    ) : (
+      <span className="text-yellow-500">Waiting</span>
+    )}
+  </td>
+
+  {/* ACTIONS */}
+  <td className="px-4 py-3 flex gap-2">
+    {can("queue_talk") && (
+      <button
+        onClick={() => toggleTalked(q.id!, q.talked)}
+        className={`px-3 py-1 rounded-lg text-xs ${
+          q.talked === "lala hadlay"
+            ? "bg-green-500 text-white"
+            : "bg-gray-200 text-gray-700"
+        }`}
+      >
+        {q.talked === "lala hadlay" ? "Talked ✓" : "Talk"}
+      </button>
+    )}
+
+    {can("queue_done") && (
+      <button
+        onClick={() => updateStatus(q.id!, "done")}
+        className="px-3 py-1 bg-green-500 text-white rounded-lg text-xs"
+      >
+        Done
+      </button>
+    )}
+
+    {can("queue_delete") && (
+      <button
+        onClick={() => removeFromQueue(q.id!)}
+        className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs"
+      >
+        Delete
+      </button>
+    )}
+  </td>
+</tr>
               ))}
             </tbody>
           </table>
