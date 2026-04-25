@@ -9,6 +9,7 @@ import ViewPatientModal from "../components/ViewPatientModal";
 import EditPatientModal from "../components/EditPatientModal";
 import { usePatients, Patient } from "../context/PatientContext";
 import { useSettings } from "../context/SettingsContext";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function PatientsPage() {
   const { patients, deletePatient, loading } = usePatients();
@@ -93,8 +94,9 @@ export default function PatientsPage() {
   }
 
   return (
-    <div className={`flex flex-col md:flex-row min-h-screen ${neonMode ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40" : "bg-linear-to-br from-white via-amber-50/30 to-white"}`}>
-      <Sidebar mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} neonMode={neonMode} />
+    <ProtectedRoute allowed={["admin", "staff"]}>
+      <div className={`flex flex-col md:flex-row min-h-screen ${neonMode ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40" : "bg-linear-to-br from-white via-amber-50/30 to-white"}`}>
+        <Sidebar mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} neonMode={neonMode} />
       {mobileMenuOpen && (
         <div className={`fixed inset-0 z-30 md:hidden ${neonMode ? "bg-black/60 backdrop-blur-sm" : "bg-white/80 backdrop-blur-sm"}`} onClick={() => setMobileMenuOpen(false)} />
       )}
@@ -177,5 +179,6 @@ export default function PatientsPage() {
       {viewingPatient && <ViewPatientModal patient={viewingPatient} onClose={() => setViewingPatient(null)} neonMode={neonMode} />}
       {editingPatient && <EditPatientModal patient={editingPatient} onClose={() => setEditingPatient(null)} neonMode={neonMode} />}
     </div>
+    </ProtectedRoute>
   );
 }

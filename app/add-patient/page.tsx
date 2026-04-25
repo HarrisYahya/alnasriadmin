@@ -8,6 +8,7 @@ import ServicesPopup from "../components/ServicesPopup";
 import { usePatients } from "../context/PatientContext";
 import { useSettings } from "../context/SettingsContext";
 import { servicesList } from "../lib/constants";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AddPatientPage() {
   const { addPatient } = usePatients();
@@ -140,13 +141,14 @@ export default function AddPatientPage() {
   };
 
   return (
-    <div
-      className={`flex flex-col md:flex-row min-h-screen font-sans ${
-        neonMode
-          ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40"
-          : "bg-linear-to-br from-white via-amber-50/30 to-white"
-      }`}
-    >
+    <ProtectedRoute allowed={["admin", "staff"]}>
+      <div
+        className={`flex flex-col md:flex-row min-h-screen font-sans ${
+          neonMode
+            ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40"
+            : "bg-linear-to-br from-white via-amber-50/30 to-white"
+        }`}
+      >
       <Sidebar
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -202,5 +204,6 @@ export default function AddPatientPage() {
         />
       </main>
     </div>
+    </ProtectedRoute>
   );
 }

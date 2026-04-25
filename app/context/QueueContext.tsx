@@ -167,12 +167,19 @@ export const QueueProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateStatus = async (id: string, status: QueueItem["status"]) => {
+    // Optimistic update
+    setQueue((prev) => prev.map((item) => item.id === id ? { ...item, status } : item));
+
     const { error } = await supabase
       .from("queue")
       .update({ status })
       .eq("id", id);
 
-    if (error) console.error("Update error:", error);
+    if (error) {
+      console.error("Update error:", error);
+      // Rollback on error
+      setQueue((prev) => prev.map((item) => item.id === id ? { ...item, status: item.status } : item));
+    }
   };
 
   const toggleTalked = async (id: string, talked: TalkedType) => {
@@ -181,21 +188,38 @@ export const QueueProvider = ({ children }: { children: React.ReactNode }) => {
         ? "lala hadlay"
         : "weli lala hadlin";
 
+    // Optimistic update
+    setQueue((prev) => prev.map((item) => item.id === id ? { ...item, talked: newValue } : item));
+
     const { error } = await supabase
       .from("queue")
       .update({ talked: newValue })
       .eq("id", id);
 
-    if (error) console.error("Toggle error:", error);
+    if (error) {
+      console.error("Toggle error:", error);
+      // Rollback
+      setQueue((prev) => prev.map((item) => item.id === id ? { ...item, talked } : item));
+    }
   };
 
   const removeFromQueue = async (id: string) => {
+    // Optimistic update: remove immediately
+    const itemToRemove = queue.find((item) => item.id === id);
+    setQueue((prev) => prev.filter((item) => item.id !== id));
+
     const { error } = await supabase
       .from("queue")
       .delete()
       .eq("id", id);
 
-    if (error) console.error("Delete error:", error);
+    if (error) {
+      console.error("Delete error:", error);
+      // Rollback: add back
+      if (itemToRemove) {
+        setQueue((prev) => [...prev, itemToRemove].sort((a, b) => a.ticket_number - b.ticket_number));
+      }
+    }
   };
 
   return (

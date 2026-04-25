@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useAppointments } from "../../context/AppointmentContext";
 import { usePatients } from "../../context/PatientContext";
 import { useSettings } from "../../context/SettingsContext";
+import ProtectedRoute from "../../components/ProtectedRoute";
 
 export default function AppointmentDayPage() {
   const { date } = useParams();
@@ -61,13 +62,14 @@ export default function AppointmentDayPage() {
   }, [appointments]);
 
   return (
-    <div
-      className={`min-h-screen p-6 ${
-        neonMode
-          ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40 text-white"
-          : "bg-linear-to-br from-white via-amber-50/30 to-white text-gray-800"
-      }`}
-    >
+    <ProtectedRoute allowed={["admin", "staff"]}>
+      <div
+        className={`min-h-screen p-6 ${
+          neonMode
+            ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40 text-white"
+            : "bg-linear-to-br from-white via-amber-50/30 to-white text-gray-800"
+        }`}
+      >
       {/* HEADER */}
       <h1
         className={`text-2xl font-light mb-6 ${
@@ -201,5 +203,6 @@ export default function AppointmentDayPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

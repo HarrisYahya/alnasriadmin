@@ -1,6 +1,7 @@
 "use client";
 
 import { useSettings } from "../../context/SettingsContext";
+import Link from "next/link";
 
 export default function PharmacySidebar({
   onNavigate,
@@ -79,6 +80,13 @@ export default function PharmacySidebar({
           >
             🧾 {open && "Sales"}
           </button>
+
+          <Link
+            href="/profile"
+            className={itemClass}
+          >
+            👤 {open && "Profile"}
+          </Link>
 
           {/* THEME TOGGLE */}
           <button

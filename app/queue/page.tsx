@@ -8,6 +8,8 @@ import { useSettings } from "../context/SettingsContext";
 import { useAuth } from "../context/AuthContext";
 import { usePermissions } from "../hooks/usePermissions";
 import ProtectedRoute from "../components/ProtectedRoute";
+import QueueSidebar from "../components/QueueSidebar";
+import Header from "../components/Header";
 
 export const servicesList = [
   { name: "Braces Upper", fee: 25, perTooth: false },
@@ -30,7 +32,7 @@ export default function QueuePage() {
   const { settings } = useSettings();
   const { signOut } = useAuth();
   const { can } = usePermissions();
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [neonMode, setNeonMode] = useState(settings.theme === "neon");
 
   const [name, setName] = useState("");
@@ -82,19 +84,33 @@ export default function QueuePage() {
   return (
     <ProtectedRoute allowed={["staff", "admin"]}>
       <div
-        className={`min-h-screen p-6 ${
+        className={`flex flex-col md:flex-row min-h-screen ${
           neonMode
             ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40"
             : "bg-linear-to-br from-white via-amber-50/30 to-white"
         }`}
       >
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-8">
-          <h1
-            className={`text-3xl font-light ${
-              neonMode ? "text-cyan-300" : "text-gray-900"
-            }`}
-          >
+        <QueueSidebar
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          neonMode={neonMode}
+        />
+
+        <main className="flex-1 p-4 md:p-8 lg:p-10 overflow-x-auto">
+          <Header
+            patientsCount={0}
+            neonMode={neonMode}
+            setNeonMode={setNeonMode}
+          />
+
+          <div className="mt-8">
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-8">
+              <h1
+                className={`text-3xl font-light ${
+                  neonMode ? "text-cyan-300" : "text-gray-900"
+                }`}
+              >
             Queue{" "}
             <span className="font-semibold text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-purple-400">
               Management
@@ -309,6 +325,8 @@ export default function QueuePage() {
             </tbody>
           </table>
         </div>
+          </div>
+        </main>
       </div>
     </ProtectedRoute>
   );

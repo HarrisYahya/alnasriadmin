@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 type Props = {
   children: ReactNode;
-  allowed: ("admin" | "staff" | "pharmacy")[];
+  allowed?: ("admin" | "staff" | "pharmacy")[];
 };
 
 export default function ProtectedRoute({ children, allowed }: Props) {
@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children, allowed }: Props) {
       return;
     }
 
-    if (!role || !allowed.includes(role)) {
+    if (!role || (allowed && !allowed.includes(role))) {
       redirected.current = true;
       router.replace("/");
     }

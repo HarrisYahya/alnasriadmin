@@ -18,6 +18,7 @@ import Header from "../components/Header";
 import { useSettings } from "../context/SettingsContext";
 import { useAppointments } from "../context/AppointmentContext";
 import Link from "next/link";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function CalendarPage() {
   const { settings } = useSettings();
@@ -74,13 +75,14 @@ export default function CalendarPage() {
   };
 
   return (
-    <div
-      className={`flex flex-col md:flex-row min-h-screen ${
-        neonMode
-          ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40"
-          : "bg-linear-to-br from-white via-amber-50/30 to-white"
-      }`}
-    >
+    <ProtectedRoute allowed={["admin", "staff"]}>
+      <div
+        className={`flex flex-col md:flex-row min-h-screen ${
+          neonMode
+            ? "bg-linear-to-br from-black via-gray-950 to-purple-950/40"
+            : "bg-linear-to-br from-white via-amber-50/30 to-white"
+        }`}
+      >
       <Sidebar
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -212,5 +214,6 @@ export default function CalendarPage() {
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   );
 }

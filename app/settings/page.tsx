@@ -7,6 +7,7 @@ import { usePatients } from "../context/PatientContext";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 import SettingsForm from "./components/SettingsForm";
 import SettingsPreview from "./components/SettingsPreview";
@@ -62,11 +63,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <div
-      className={`flex min-h-screen ${
-        neonMode ? "bg-black" : "bg-white"
-      }`}
-    >
+    <ProtectedRoute allowed={["admin"]}>
+      <div
+        className={`flex min-h-screen ${
+          neonMode ? "bg-black" : "bg-white"
+        }`}
+      >
       <Sidebar
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -168,5 +170,6 @@ export default function SettingsPage() {
 
       </main>
     </div>
+    </ProtectedRoute>
   );
 }

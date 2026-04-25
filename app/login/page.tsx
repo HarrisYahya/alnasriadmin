@@ -37,9 +37,6 @@ export default function LoginPage() {
 
     const role = roleData?.role;
 
-    // ✅ SET COOKIE FOR MIDDLEWARE
-    document.cookie = `role=${role}; path=/`;
-
     // redirect based on role
     if (role === "admin") router.replace("/");
     else if (role === "staff") router.replace("/queue");

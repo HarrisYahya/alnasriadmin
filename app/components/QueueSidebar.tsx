@@ -2,19 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSettings } from "../context/SettingsContext";
+import { useRole } from "../hooks/useRole";
 
-interface SidebarProps {
+interface QueueSidebarProps {
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
   neonMode: boolean;
 }
 
-export default function Sidebar({
+export default function QueueSidebar({
   mobileMenuOpen,
   setMobileMenuOpen,
   neonMode,
-}: SidebarProps) {
+}: QueueSidebarProps) {
   const pathname = usePathname();
+  const { role } = useRole();
 
   const isActive = (path: string) => pathname === path;
 
@@ -52,7 +55,7 @@ export default function Sidebar({
               : "bg-linear-to-tr from-amber-500 to-amber-600 shadow-md"
           }`}
         >
-          <span className="text-white text-2xl">🦷</span>
+          <span className="text-white text-2xl">📋</span>
         </div>
 
         <h2
@@ -60,7 +63,7 @@ export default function Sidebar({
             neonMode ? "text-cyan-300" : "text-gray-800"
           }`}
         >
-          Alnasri{" "}
+          Queue{" "}
           <span
             className={
               neonMode
@@ -68,63 +71,43 @@ export default function Sidebar({
                 : "font-semibold text-amber-600"
             }
           >
-            Dental
+            Management
           </span>
         </h2>
       </div>
 
       <nav className="space-y-2">
-        <Link href="/" onClick={closeMobile} className={linkClass("/")}>
-          <span>📊</span> Dashboard
+        <Link href="/queue" onClick={closeMobile} className={linkClass("/queue")}>
+          <span>📋</span> Today Queue
         </Link>
 
-        <Link
-          href="/add-patient"
-          onClick={closeMobile}
-          className={linkClass("/add-patient")}
-        >
-          <span>➕</span> Add Patient
-        </Link>
+        {role === "admin" && (
+          <>
+            <Link
+              href="/all-queue"
+              onClick={closeMobile}
+              className={linkClass("/all-queue")}
+            >
+              <span>📋</span> All Queue
+            </Link>
 
-        <Link
-          href="/patients"
-          onClick={closeMobile}
-          className={linkClass("/patients")}
-        >
-          <span>👥</span> All Patients
-        </Link>
+            <Link
+              href="/patients"
+              onClick={closeMobile}
+              className={linkClass("/patients")}
+            >
+              <span>👥</span> All Patients
+            </Link>
 
-        <Link
-          href="/today-patients"
-          onClick={closeMobile}
-          className={linkClass("/today-patients")}
-        >
-          <span>📅</span> Today's Patients
-        </Link>
-
-        <Link
-          href="/calendar"
-          onClick={closeMobile}
-          className={linkClass("/calendar")}
-        >
-          <span>📆</span> Calendar
-        </Link>
-
-        <Link
-          href="/settings"
-          onClick={closeMobile}
-          className={linkClass("/settings")}
-        >
-          <span>⚙️</span> Settings
-        </Link>
-
-        <Link
-          href="/patient-notes"
-          onClick={closeMobile}
-          className={linkClass("/patient-notes")}
-        >
-          <span>📝</span> Patient Notes
-        </Link>
+            <Link
+              href="/today-patients"
+              onClick={closeMobile}
+              className={linkClass("/today-patients")}
+            >
+              <span>📅</span> Today's Patients
+            </Link>
+          </>
+        )}
 
         <Link
           href="/profile"
@@ -133,6 +116,16 @@ export default function Sidebar({
         >
           <span>👤</span> Profile
         </Link>
+
+        {role === "admin" && (
+          <Link
+            href="/settings"
+            onClick={closeMobile}
+            className={linkClass("/settings")}
+          >
+            <span>⚙️</span> Settings
+          </Link>
+        )}
       </nav>
 
       <div
@@ -141,7 +134,7 @@ export default function Sidebar({
         }`}
       >
         <p className={neonMode ? "animate-pulse" : ""}>
-          {neonMode ? "✨ neon premium suite" : "✨ white luxury suite"}
+          {neonMode ? "✨ queue suite" : "✨ management suite"}
         </p>
       </div>
     </aside>
